@@ -60,6 +60,7 @@ jobs:
           set -x
           git fetch --tags
           last_version=$(git tag --sort=-version:refname | grep -P "^$package_name@v\d+.\d+.\d+$" | head -n 1 | cut -d v -f 2)
+
           if [ -z "$last_version" ]; then
             new_version=1.0.0
           elif [[ ${{ github.head_ref }} =~ ^"major" ]]; then
@@ -69,6 +70,7 @@ jobs:
           else
             new_version=$(semver bump patch "$last_version")
           fi
+
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
       - name: Prepare artifact
         id: prepare
