@@ -20,7 +20,7 @@ resource "aws_s3_bucket_versioning" "tf_backend_bucket_versioning" {
 }
 
 resource "aws_s3_bucket_object_lock_configuration" "tf_backend_bucket_object_lock" {
-  depends_on          = [aws_s3_bucket.default]
+  depends_on          = [aws_s3_bucket.tf_backend_bucket_versioning]
   bucket              = aws_s3_bucket.default.id
   object_lock_enabled = "Enabled"
 }
