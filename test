@@ -1,7 +1,7 @@
 name: Infrastructure - Plan and apply
 env:
   package_name: gitops
-"on":
+on:
   workflow_dispatch:
     inputs:
       environment:
