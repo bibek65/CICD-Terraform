@@ -15,6 +15,7 @@ env:
     types:
       - synchronize
       - opened
+      - closed
     branches:
       - dev
       - main
