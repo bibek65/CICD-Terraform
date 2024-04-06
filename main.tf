@@ -11,9 +11,6 @@ terraform {
   }
 }
 
-resource "aws_s3_bucket" "tf_backend_bucket" {
-  bucket = var.tf_backend_bucket_name
-}
 
 resource "aws_s3_bucket_versioning" "tf_backend_bucket_versioning" {
   bucket = aws_s3_bucket.tf_backend_bucket.id
@@ -37,22 +34,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "tf_backend_bucket
   }
 }
 
-resource "aws_dynamodb_table" "tf_backend_bucket_state_lock" {
-  name           = "bibek_terraform_state"
-  read_capacity  = 1
-  write_capacity = 1
-  hash_key       = "LockID"
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-  tags = {
-    "Name" = "Bibek DynamoDB Terraform State Lock Table"
-  }
-}
 
 resource "aws_s3_bucket" "default" {
-  bucket = var.bucket_name
+  bucket = "${var.bucket_name}-${terraform.workspace}"
   tags = {
     Name = var.bucket_name
   }
