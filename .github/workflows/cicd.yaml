@@ -1,4 +1,4 @@
-name: Infrastructure - Plan and apply Terraform
+name: Infrastructure - Plan and apply using Terraform
 env:
   package_name: gitops
 on:
