@@ -1,21 +1,43 @@
-name: Infrastructure - Plan and apply using Terraform
+name: Infrastructure - Plan and apply Terraform
 env:
   package_name: gitops
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        options:
+          - "dev"
+          - "prod"
 
   pull_request:
     types:
-      - synchronize
-      - opened
-      - closed
+      - "synchronize"
+      - "opened"
+      - "closed"
     branches:
-      - dev
       - main
+      - dev
 jobs:
+  resolve-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: resolve environment
+        run: |
+          branch_ref=${{ github.base_ref }}
+          if [[ "$branch_ref" == "main" ]] || ${{ contains(github.event.inputs.environment, 'prod') }}; then
+            echo "env_name=prod" >> $GITHUB_ENV
+          else
+            echo "env_name=dev" >> $GITHUB_ENV
+          fi
+    outputs:
+      env_name: "${{ env.env_name }}"
   build:
     name: Deploy and Release
     runs-on: ubuntu-latest
+    needs: [resolve-environment]
+    environment: ${{ needs.resolve-env.outputs.env_name }}
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       TF_IN_AUTOMATION: true
@@ -36,6 +58,16 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
       - name: Terraform validate
         run: terraform validate
+
+      - name: Switch to required workspace
+        run: |
+          echo "Switching to workspace $WORKSPACE"
+          terraform workspace select -or-create $WORKSPACE
+        env:
+          WORKSPACE: ${{ needs.resolve-environment.outputs.env_name}}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Terraform plan
         if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize')
         run: terraform plan
@@ -60,24 +92,22 @@ jobs:
           set -x
           git fetch --tags
           last_version=$(git tag --sort=-version:refname | grep -P "^$package_name@v\d+.\d+.\d+$" | head -n 1 | cut -d v -f 2)
-
           if [ -z "$last_version" ]; then
             new_version=1.0.0
-          elif [ "${{ github.head_ref }}" = "major" ]; then
+          elif [[ ${{ github.head_ref }} =~ ^"major" ]]; then
             new_version=$(semver bump major "$last_version")
-          elif [ "${{ github.head_ref }}" = "feat" ]; then
+          elif [[ ${{ github.head_ref }} =~ ^"feat" ]]; then
             new_version=$(semver bump minor "$last_version")
           else
             new_version=$(semver bump patch "$last_version")
           fi
-
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
       - name: Prepare artifact
         id: prepare
         run: |
           BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
-          if [ "${{ github.event.pull_request.merged }}" == 'true' ]; then
+          if [[ ${{ github.event.pull_request.merged }} == 'true' ]]; then
             VERSION=${SCOPE}@v${RELEASE_VERSION}
           else
             VERSION=${SCOPE}@v${RELEASE_VERSION}+build.${BUILD_NUM}.${BUILD_ID}
