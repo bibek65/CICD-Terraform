@@ -70,7 +70,7 @@ jobs:
             new_version=$(semver bump patch "$last_version")
           fi
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
-      - name: prepare artifact
+      - name: Prepare artifact
         id: prepare
         run: |
           BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
