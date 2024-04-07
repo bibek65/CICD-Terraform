@@ -2,7 +2,7 @@ name: Infrastructure - Plan and apply
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "*/1 * * * *"
 jobs:
   resolve-env:
     runs-on: ubuntu-latest
