@@ -42,6 +42,14 @@ resource "aws_s3_bucket" "default" {
   }
 }
 
+resource "aws_s3_bucket" "bucket" {
+  bucket = "test"
+  tags = {
+    Name = var.bucket_name
+  }
+}
+
+
 
 
 
