@@ -36,28 +36,26 @@ jobs:
       - name: Terraform Plan
         id: tf-plan
         run: |
-          export exitcode=0
-          terraform plan -detailed-exitcode -no-color -out tfplan || export exitcode=$?
-
-          echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
-
-          if [ $exitcode -eq 1 ]; then
-            echo Terraform Plan Failed!
-            exit 1
-          else 
-            exit 0
+          output =$(terraform plan)
+          echo "$output"
+          if [[ $(echo "$output" | grep -c "No changes") -eq 0 ]]; then
+            echo "DRIFT_DETECTED=true" >> $GITHUB_ENV
+          else
+            echo "DRIFT_DETECTED=false" >> $GITHUB_ENV
           fi
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
-      - name: Check for Drift
-        if: ${{ contains(run.outputs.exitcode, '2') }}
-        run: echo "Drift detected."
-
-      - name: Reconcile Drift
-        if: ${{ contains(run.outputs.exitcode, '2') }}
-        run: terraform apply -auto-approve
+      - name: Terraform apply
+        if: env.DRIFT_DETECTED == 'true'
+        run: |
+          retries=5
+          until terraform apply --auto-approve || [ $retries -eq 0 ]
+          do
+            sleep 10
+            retries=$((retries-1))
+          done
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
