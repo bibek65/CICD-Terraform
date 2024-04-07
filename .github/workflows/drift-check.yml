@@ -35,7 +35,7 @@ jobs:
 
       - name: Terraform Plan and Check for Changes
         run: |
-          terraform plan -no-color > plan_output.txt
+          terraform plan > plan_output.txt
           if grep -q "No changes" plan_output.txt; then
             echo "NO_CHANGES=true" >> $GITHUB_ENV
           else
@@ -46,7 +46,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
       - name: Terraform apply
-        if: env.NO_CHANGES == 'false'
+        if: env.NO_CHANGES == 'true'
         run: |
           echo env.NO_CHANGES
           terraform apply --auto-approve
