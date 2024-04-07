@@ -48,6 +48,12 @@ resource "aws_s3_bucket" "bucket" {
     Name = var.bucket_name
   }
 }
+resource "aws_s3_bucket" "bucket" {
+  bucket = "bibek-test-leap-bucket"
+  tags = {
+    Name = var.bucket_name
+  }
+}
 
 
 
