@@ -48,12 +48,8 @@ jobs:
       - name: Terraform apply
         if: env.NO_CHANGES == 'false'
         run: |
-          retries=5
-          until terraform apply --auto-approve || [ $retries -eq 0 ]
-          do
-            sleep 10
-            retries=$((retries-1))
-          done
+          echo env.NO_CHANGES
+          terraform apply --auto-approve
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
