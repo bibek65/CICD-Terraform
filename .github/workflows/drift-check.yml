@@ -46,7 +46,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
       - name: Terraform apply
-        if: env.NO_CHANGES == 'true'
+        if: env.NO_CHANGES == 'false'
         run: |
           echo env.NO_CHANGES
           terraform apply --auto-approve

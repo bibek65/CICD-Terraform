@@ -43,7 +43,7 @@ resource "aws_s3_bucket" "default" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "test"
+  bucket = "bibek-test-lft-bucket"
   tags = {
     Name = var.bucket_name
   }
