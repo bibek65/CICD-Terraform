@@ -1,4 +1,4 @@
-name: Infrastructure - Plan and apply
+name: Drift Check
 on:
   workflow_dispatch:
 
