@@ -52,8 +52,19 @@ jobs:
       - name: Terraform apply
         if: env.NO_CHANGES == 'false'
         run: |
-          echo ${{ env.NO_CHANGES }}
-          terraform apply --auto-approve
+          max_retries=5
+          wait_seconds=60
+          attempt=0
+          until terraform apply -auto-approve; do
+            attempt=$((attempt + 1))
+            if [ "$attempt" -ge "$max_retries" ]; then
+              echo "Attempt $attempt failed! No more retries left."
+              exit 1
+            else
+              echo "Attempt $attempt failed! Retrying in $wait_seconds seconds..."
+              sleep $wait_seconds
+            fi
+          done
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
