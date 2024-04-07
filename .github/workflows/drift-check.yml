@@ -33,28 +33,32 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
 
-      - name: Terraform plan
-        id: plan
+      - name: Terraform Plan
+        id: tf-plan
         run: |
-          terraform plan -no-color -detailed-exitcode > plan_output.txt || true
-          if [ $? -eq 2 ]
-          then
-            echo "TERRAFORM_CHANGES=true" >> $GITHUB_ENV
-          else
-            echo "TERRAFORM_CHANGES=false" >> $GITHUB_ENV
+          export exitcode=0
+          terraform plan -detailed-exitcode -no-color -out tfplan || export exitcode=$?
+
+          echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
+
+          if [ $exitcode -eq 1 ]; then
+            echo Terraform Plan Failed!
+            exit 1
+          else 
+            exit 0
           fi
-        shell: /usr/bin/bash -e {0}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
       - name: Check for Drift
-        if: ${{ contains(needs.build.outputs.TF_PLAN, '2') }}
+        if: ${{ contains(run.outputs.exitcode, '2') }}
         run: echo "Drift detected."
+
       - name: Reconcile Drift
-        if: ${{ contains(needs.build.outputs.TF_PLAN, '2') }}
+        if: ${{ contains(run.outputs.exitcode, '2') }}
         run: terraform apply -auto-approve
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_DEFAULT_REGION: us-east-1
