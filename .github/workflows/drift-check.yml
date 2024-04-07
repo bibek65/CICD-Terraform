@@ -33,21 +33,20 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
 
-      - name: Terraform Plan
-        id: plan
+      - name: Terraform Plan and Check for Changes
         run: |
-          terraform plan -no-color -detailed-exitcode || PLAN_EXIT=$?
-          if [ "$PLAN_EXIT" -eq 2 ]; then
-            echo "DRIFT_DETECTED=true" >> $GITHUB_ENV
+          terraform plan -no-color > plan_output.txt
+          if grep -q "No changes" plan_output.txt; then
+            echo "NO_CHANGES=true" >> $GITHUB_ENV
           else
-            echo "DRIFT_DETECTED=false" >> $GITHUB_ENV
+            echo "NO_CHANGES=false" >> $GITHUB_ENV
           fi
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
       - name: Terraform apply
-        if: env.DRIFT_DETECTED == 'true'
+        if: env.NO_CHANGES == 'false'
         run: |
           retries=5
           until terraform apply --auto-approve || [ $retries -eq 0 ]
