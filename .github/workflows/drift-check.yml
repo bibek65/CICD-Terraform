@@ -36,7 +36,7 @@ jobs:
       - name: Terraform plan
         id: plan
         run: |
-          TF_PLAN=$(terraform plan -no-color -detailed-exitcode)
+          TF_PLAN=$(terraform plan)
           echo "TF_PLAN=${TF_PLAN}" >> $GITHUB_ENV
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
