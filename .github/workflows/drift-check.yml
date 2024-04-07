@@ -34,13 +34,10 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
 
       - name: Terraform Plan
-        id: tf-plan
+        id: plan
         run: |
-          set +e
-          terraform plan -no-color -detailed-exitcode
-          PLAN_EXIT=$?
-          set -e
-          if [[ "$PLAN_EXIT" == "2" ]]; then
+          terraform plan -no-color -detailed-exitcode || PLAN_EXIT=$?
+          if [ "$PLAN_EXIT" -eq 2 ]; then
             echo "DRIFT_DETECTED=true" >> $GITHUB_ENV
           else
             echo "DRIFT_DETECTED=false" >> $GITHUB_ENV
