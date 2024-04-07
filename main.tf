@@ -42,18 +42,6 @@ resource "aws_s3_bucket" "default" {
   }
 }
 
-resource "aws_s3_bucket" "bucket" {
-  bucket = "bibek-test-lft-bucket"
-  tags = {
-    Name = var.bucket_name
-  }
-}
-resource "aws_s3_bucket" "bkt" {
-  bucket = "bibek-test-leap-bucket"
-  tags = {
-    Name = var.bucket_name
-  }
-}
 
 
 
