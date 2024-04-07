@@ -36,9 +36,8 @@ jobs:
       - name: Terraform Plan
         id: tf-plan
         run: |
-          output =$(terraform plan)
-          echo "$output"
-          if [[ $(echo "$output" | grep -c "No changes") -eq 0 ]]; then
+          terraform plan -no-color -detailed-exitcode || PLAN_EXIT=$?
+          if [ "$PLAN_EXIT" -eq 2 ]; then
             echo "DRIFT_DETECTED=true" >> $GITHUB_ENV
           else
             echo "DRIFT_DETECTED=false" >> $GITHUB_ENV
