@@ -1,4 +1,4 @@
-name: Infrastructure - Plan and apply
+name: Infra - Plan and apply
 env:
   package_name: gitops
 on:
